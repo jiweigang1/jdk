@@ -334,7 +334,9 @@ void SafepointSynchronize::arm_safepoint() {
 
   OrderAccess::fence(); // storestore|storeload, global state -> local state
 }
-
+/*
+ 安全点对象 begin 方法实现，负责暂停所有的应用线程
+*/
 // Roll all threads forward to a safepoint and suspend them all
 void SafepointSynchronize::begin() {
   assert(Thread::current()->is_VM_thread(), "Only VM thread may execute a safepoint");
@@ -343,13 +345,16 @@ void SafepointSynchronize::begin() {
   SafepointTracing::begin(VMThread::vm_op_type());
 
   Universe::heap()->safepoint_synchronize_begin();
-
   // By getting the Threads_lock, we assure that no threads are about to start or
   // exit. It is released again in SafepointSynchronize::end().
-  Threads_lock->lock();
+  /*
+   begin 方法只会在 VM 线程中调用，使用 Threads_lock 对当前 VM 线程加锁，这个锁用到阻塞 应用线程，VM 线程在执行完 Event 前一直回占用此锁，
+   应用线程获取此锁的时候就好阻塞。
+  */
+  Threads_lock->lock(); // Theads_lock 对象在那里声明
 
   assert( _state == _not_synchronized, "trying to safepoint synchronize with wrong state");
-
+  //获取当前所有应用线程数量
   int nof_threads = Threads::number_of_threads();
 
   _nof_threads_hit_polling_page = 0;
@@ -360,6 +365,7 @@ void SafepointSynchronize::begin() {
   _current_jni_active_count = 0;
 
   // Set number of threads to wait for
+  // 设置需要等待应用线程阻塞的线程数量，Stop the word 是需要暂停所有的应用线程，这里
   _waiting_to_block = nof_threads;
 
   jlong safepoint_limit_time = 0;

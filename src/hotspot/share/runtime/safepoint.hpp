@@ -58,7 +58,7 @@ public:
 
 //
 // Implements roll-forward to safepoint (safepoint synchronization)
-//
+// 安全点对象定义
 class SafepointSynchronize : AllStatic {
  public:
   enum SynchronizeState {
