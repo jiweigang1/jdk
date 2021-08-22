@@ -168,6 +168,9 @@ void SafepointSynchronize::begin() {
 
   // By getting the Threads_lock, we assure that no threads are about to start or
   // exit. It is released again in SafepointSynchronize::end().
+  /**
+    加锁，这里进行加锁主要的目的不是线程安全，而是优先获取 Threads_lock 锁，后续使用这个锁进行阻塞 其它的应用线程。
+  */
   Threads_lock->lock();
 
   assert( _state == _not_synchronized, "trying to safepoint synchronize with wrong state");
@@ -258,7 +261,7 @@ void SafepointSynchronize::begin() {
     if (!UseMembar) {
       os::serialize_thread_states();
     }
-
+    //对于解释器执行的代码，需要替换解释器字节码对照表，替换成需要检测安全点的字节码对照表
     if (SafepointMechanism::uses_global_page_poll()) {
       // Make interpreter safepoint aware
       Interpreter::notice_safepoints();
