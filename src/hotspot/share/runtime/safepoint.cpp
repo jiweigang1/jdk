@@ -151,6 +151,9 @@ static volatile int TryingToBlock = 0 ;    // proximate value -- for advisory us
 static bool timeout_error_printed = false;
 
 // Roll all threads forward to a safepoint and suspend them all
+/**
+  VM 线程再执行 STW 相关的操作的时候，首选需要暂停所有的线程，这些所有的线程的暂停 再 Begin中完成
+*/
 void SafepointSynchronize::begin() {
   EventSafepointBegin begin_event;
   Thread* myThread = Thread::current();
