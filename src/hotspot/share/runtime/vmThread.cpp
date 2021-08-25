@@ -279,9 +279,11 @@ void VMThread::run() {
 
   // 4526887 let VM thread exit at Safepoint
   _no_op_reason = "Halt";
+  
   SafepointSynchronize::begin();
 
   if (VerifyBeforeExit) {
+    // 执行操作指令
     HandleMark hm(VMThread::vm_thread());
     // Among other things, this ensures that Eden top is correct.
     Universe::heap()->prepare_for_verify();
@@ -410,7 +412,9 @@ bool VMThread::no_op_safepoint_needed(bool check_time) {
   _no_op_reason = "Cleanup";
   return true;
 }
-
+/**
+  线程存活的时候一直执行，等待有相关操作指令
+*/
 void VMThread::loop() {
   assert(_cur_vm_operation == NULL, "no current one should be executing");
 
@@ -425,6 +429,8 @@ void VMThread::loop() {
 
       // Look for new operation
       assert(_cur_vm_operation == NULL, "no current one should be executing");
+      
+      //获取当前需要执行的操作指令
       _cur_vm_operation = _vm_queue->remove_next();
 
       // Stall time tracking code
@@ -476,7 +482,7 @@ void VMThread::loop() {
 
     //
     // Execute VM operation
-    //
+    //执行相关操作
     { HandleMark hm(VMThread::vm_thread());
 
       EventMark em("Executing VM operation: %s", vm_operation()->name());
@@ -491,15 +497,19 @@ void VMThread::loop() {
 
       // If we are at a safepoint we will evaluate all the operations that
       // follow that also require a safepoint
+      
+      // 首先判断这个操作是否需要在安全点中执行, 如果需要才进入安全点，否则直接执行操作就可以
       if (_cur_vm_operation->evaluate_at_safepoint()) {
         log_debug(vmthread)("Evaluating safepoint VM operation: %s", _cur_vm_operation->name());
 
         _vm_queue->set_drain_list(safepoint_ops); // ensure ops can be scanned
-
+        
+        //进入到安全点
         SafepointSynchronize::begin();
         evaluate_operation(_cur_vm_operation);
         // now process all queued safepoint ops, iteratively draining
         // the queue until there are none left
+        //在一个安全点中，执行完当前所有的 操作
         do {
           _cur_vm_operation = safepoint_ops;
           if (_cur_vm_operation != NULL) {
@@ -509,6 +519,7 @@ void VMThread::loop() {
               // to grab the next op now
               VM_Operation* next = _cur_vm_operation->next();
               _vm_queue->set_drain_list(next);
+              // 执行操作
               evaluate_operation(_cur_vm_operation);
               _cur_vm_operation = next;
               if (PrintSafepointStatistics) {
@@ -539,8 +550,11 @@ void VMThread::loop() {
         _vm_queue->set_drain_list(NULL);
 
         // Complete safepoint synchronization
+        
+        //从安全点中退出
         SafepointSynchronize::end();
-
+      
+      // 如果不需要在安全点中执行，直接执行
       } else {  // not a safepoint operation
         log_debug(vmthread)("Evaluating non-safepoint VM operation: %s", _cur_vm_operation->name());
         if (TraceLongCompiles) {

@@ -815,7 +815,9 @@ void SafepointSynchronize::check_for_lazy_critical_native(JavaThread *thread, Ja
 
 // -------------------------------------------------------------------------------------------------------
 // Implementation of Safepoint callback point
-
+/**
+  应用线程最终会通过这个方法被阻塞掉
+*/
 void SafepointSynchronize::block(JavaThread *thread) {
   assert(thread != NULL, "thread must be set");
   assert(thread->is_Java_thread(), "not a Java thread");
@@ -839,6 +841,7 @@ void SafepointSynchronize::block(JavaThread *thread) {
   // Check that we have a valid thread_state at this point
   switch(state) {
     case _thread_in_vm_trans:
+    //如果是通过解释器执行的线程
     case _thread_in_Java:        // From compiled code
 
       // We are highly likely to block on the Safepoint_lock. In order to avoid blocking in this case,
@@ -852,11 +855,16 @@ void SafepointSynchronize::block(JavaThread *thread) {
       // We will always be holding the Safepoint_lock when we are examine the state
       // of a thread. Hence, the instructions between the Safepoint_lock->lock() and
       // Safepoint_lock->unlock() are happening atomic with regards to the safepoint code
+      /**
+        这里进行加锁主要目的是线程安全而不是把线程
+      */
       Safepoint_lock->lock_without_safepoint_check();
       if (is_synchronizing()) {
         // Decrement the number of threads to wait for and signal vm thread
         assert(_waiting_to_block > 0, "sanity check");
+        //需要阻塞的线程计数减一 ，但是当前线程还没有被阻塞。
         _waiting_to_block--;
+
         thread->safepoint_state()->set_has_called_back(true);
 
         DEBUG_ONLY(thread->set_visited_for_critical_count(true));
@@ -866,7 +874,9 @@ void SafepointSynchronize::block(JavaThread *thread) {
         }
 
         // Consider (_waiting_to_block < 2) to pipeline the wakeup of the VM thread
+        // 如果最后一个应用线程也被阻塞了，就应该唤醒 VM 线程 来执行 相关操作了
         if (_waiting_to_block == 0) {
+          //唤醒 VMThread 线程，VMThread 线程 被 Safepoint_lock 阻塞
           Safepoint_lock->notify_all();
         }
       }
@@ -877,15 +887,19 @@ void SafepointSynchronize::block(JavaThread *thread) {
       // below because we are often called during transitions while
       // we hold different locks. That would leave us suspended while
       // holding a resource which results in deadlocks.
+      //表示线程处于阻塞状态
       thread->set_thread_state(_thread_blocked);
+      //应用线程释放锁
       Safepoint_lock->unlock();
 
       // We now try to acquire the threads lock. Since this lock is hold by the VM thread during
       // the entire safepoint, the threads will all line up here during the safepoint.
+      // 在这里应用线程会被真正的阻塞掉，等待 VMThread 线程释放锁
       Threads_lock->lock_without_safepoint_check();
       // restore original state. This is important if the thread comes from compiled code, so it
       // will continue to execute with the _thread_in_Java state.
       thread->set_thread_state(state);
+      //应用线程获取到锁，表明 VMThread 线程已经执行完毕，获取到锁直接释放，这里锁主要是阻塞应用线程，不是为了线程安全
       Threads_lock->unlock();
       break;
 
