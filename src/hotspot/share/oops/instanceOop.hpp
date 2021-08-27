@@ -36,10 +36,11 @@ class instanceOopDesc : public oopDesc {
   static int header_size() { return sizeof(instanceOopDesc)/HeapWordSize; }
 
   // If compressed, the offset of the fields of the instance may not be aligned.
-  // 保存对象头 和 对象实例的 数据
+  // 返回相关 offset
   static int base_offset_in_bytes() {
     // offset computation code breaks if UseCompressedClassPointers
     // only is true
+    // 如果启用了指令压缩
     return (UseCompressedOops && UseCompressedClassPointers) ?
              klass_gap_offset_in_bytes() :
              sizeof(instanceOopDesc);
