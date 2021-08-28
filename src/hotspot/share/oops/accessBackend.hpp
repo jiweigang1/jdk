@@ -259,6 +259,7 @@ protected:
   template <DecoratorSet ds, typename T>
   static inline typename EnableIf<
     HasDecorator<ds, MO_UNORDERED>::value, T>::type
+  // 从指定 指针地址  获取 数据
   load_internal(void* addr) {
     return *reinterpret_cast<T*>(addr);
   }
