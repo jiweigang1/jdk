@@ -39,7 +39,7 @@
 #include "runtime/stubRoutines.hpp"
 #include "runtime/synchronizer.hpp"
 #include "utilities/macros.hpp"
-
+// 定义的宏 后续调用生成生成指令的时候，可以简写
 #define __ _masm->
 
 // Global Register Names

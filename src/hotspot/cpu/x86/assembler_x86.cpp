@@ -2711,7 +2711,7 @@ void Assembler::evmovdquq(Address dst, XMMRegister src, int vector_len) {
 }
 
 // Uses zero extension on 64bit
-
+//生成汇编指令到缓存中 
 void Assembler::movl(Register dst, int32_t imm32) {
   int encode = prefix_and_encode(dst->encoding());
   emit_int8((unsigned char)(0xB8 | encode));
