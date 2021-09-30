@@ -2717,7 +2717,9 @@ void Assembler::movl(Register dst, int32_t imm32) {
   emit_int8((unsigned char)(0xB8 | encode));
   emit_int32(imm32);
 }
-
+/**
+  寄存器之间复制
+*/
 void Assembler::movl(Register dst, Register src) {
   int encode = prefix_and_encode(dst->encoding(), src->encoding());
   emit_int8((unsigned char)0x8B);
