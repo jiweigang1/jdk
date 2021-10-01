@@ -836,7 +836,7 @@ private:
 
   public:
 
-  // Creation
+  // Creation  继承 AbstractAssembler
   Assembler(CodeBuffer* code) : AbstractAssembler(code) {
     init_attributes();
   }

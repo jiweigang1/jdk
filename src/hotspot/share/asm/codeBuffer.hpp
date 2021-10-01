@@ -77,6 +77,9 @@ public:
 // This class represents a stream of code and associated relocations.
 // There are a few in each CodeBuffer.
 // They are filled concurrently, and concatenated at the end.
+/**
+ 代码断，存储机器指令
+*/
 class CodeSection {
   friend class CodeBuffer;
  public:
@@ -85,6 +88,7 @@ class CodeSection {
  private:
   address     _start;           // first byte of contents (instructions)
   address     _mark;            // user mark, usually an instruction beginning
+  //当前指令末尾的内存位置，
   address     _end;             // current end address
   address     _limit;           // last possible (allocated) end address
   relocInfo*  _locs_start;      // first byte of relocation information
@@ -100,8 +104,10 @@ class CodeSection {
   // (Note:  _locs_point used to be called _last_reloc_offset.)
 
   CodeSection() {
+    //机器指令 内存开始位置
     _start         = NULL;
     _mark          = NULL;
+    //机器指令内存结束位置
     _end           = NULL;
     _limit         = NULL;
     _locs_start    = NULL;
@@ -142,10 +148,11 @@ class CodeSection {
     _limit      = cs->_limit;
     _locs_point = cs->_locs_point;
   }
-
+// address 是一个 u_char 指针，无符号 char 指针
  public:
   address     start() const         { return _start; }
   address     mark() const          { return _mark; }
+  // 获取当前末尾的指针
   address     end() const           { return _end; }
   address     limit() const         { return _limit; }
   csize_t     size() const          { return (csize_t)(_end - _start); }
@@ -180,7 +187,7 @@ class CodeSection {
   bool contains2(address pc) const  { return pc >= _start && pc <= _end; }
   bool allocates(address pc) const  { return pc >= _start && pc <  _limit; }
   bool allocates2(address pc) const { return pc >= _start && pc <= _limit; }
-
+  // 设置 end 值
   void    set_end(address pc)       { assert(allocates2(pc), "not in CodeBuffer memory: " INTPTR_FORMAT " <= " INTPTR_FORMAT " <= " INTPTR_FORMAT, p2i(_start), p2i(pc), p2i(_limit)); _end = pc; }
   void    set_mark(address pc)      { assert(contains2(pc), "not in codeBuffer");
                                       _mark = pc; }
@@ -200,6 +207,8 @@ class CodeSection {
   }
 
   // Code emission
+  // 获取末尾指针，转换为 int8_t 指针，其值设置为 x ，x 为插入的机器指令，移动 end 位置  address 是 u_char 类型指针，u_char 类型占用
+  // 一个字节，所以直接移动 各个类型数据占用的字节数据就好了，正好和 void 类型接近
   void emit_int8 ( int8_t  x)  { *((int8_t*)  end()) = x; set_end(end() + sizeof(int8_t)); }
   void emit_int16( int16_t x)  { *((int16_t*) end()) = x; set_end(end() + sizeof(int16_t)); }
   void emit_int32( int32_t x)  { *((int32_t*) end()) = x; set_end(end() + sizeof(int32_t)); }

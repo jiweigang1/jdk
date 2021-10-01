@@ -1439,7 +1439,7 @@ void Assembler::andnl(Register dst, Register src1, Address src2) {
 }
 
 void Assembler::bsfl(Register dst, Register src) {
-  int encode = prefix_and_encode(dst->encoding(), src->encoding());
+  int encode = prefix_and_e ncode(dst->encoding(), src->encoding());
   emit_int8(0x0F);
   emit_int8((unsigned char)0xBC);
   emit_int8((unsigned char)(0xC0 | encode));
