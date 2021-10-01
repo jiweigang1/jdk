@@ -376,6 +376,7 @@ class CodeBuffer: public StackObj {
   const char*  _name;
 
   CodeSection  _consts;             // constants, jump tables
+  //机器指令段
   CodeSection  _insts;              // instructions (the main section)
   CodeSection  _stubs;              // stubs (call site support), deopt, exception handling
 
@@ -494,6 +495,7 @@ class CodeBuffer: public StackObj {
   void initialize(csize_t code_size, csize_t locs_size);
 
   CodeSection* consts() { return &_consts; }
+  // 返回存储机器指令
   CodeSection* insts() { return &_insts; }
   CodeSection* stubs() { return &_stubs; }
 

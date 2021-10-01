@@ -172,7 +172,9 @@ void CodeBuffer::initialize_section_size(CodeSection* cs, csize_t size) {
   // give it some relocations to start with, if the main section has them
   if (_insts.has_locs())  cs->initialize_locs(1);
 }
-
+/**
+ * 释放 CodeSection 的内存空间
+*/
 void CodeBuffer::freeze_section(CodeSection* cs) {
   CodeSection* next_cs = (cs == consts())? NULL: code_section(cs->index()+1);
   csize_t frozen_size = cs->size();
