@@ -55,7 +55,9 @@
 #include "utilities/copy.hpp"
 #include "utilities/events.hpp"
 #include "utilities/stack.inline.hpp"
-
+/**
+invoke_at_safepoint 会触发GC
+*/
 void GenMarkSweep::invoke_at_safepoint(ReferenceProcessor* rp, bool clear_all_softrefs) {
   assert(SafepointSynchronize::is_at_safepoint(), "must be at a safepoint");
 
@@ -187,6 +189,7 @@ void GenMarkSweep::mark_sweep_phase1(bool clear_all_softrefs) {
   // use OopsInGenClosure constructor which takes a generation,
   // as the Universe has not been created when the static constructors
   // are run.
+  // 对应 MarkSweep
   follow_root_closure.set_orig_generation(gch->old_gen());
 
   // Need new claim bits before marking starts.

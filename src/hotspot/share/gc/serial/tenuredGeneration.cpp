@@ -179,7 +179,8 @@ void TenuredGeneration::collect(bool   full,
   gc_tracer->report_gc_start(gch->gc_cause(), gc_timer->gc_start());
 
   gch->pre_full_gc_dump(gc_timer);
-
+  
+  //会调用 GC
   GenMarkSweep::invoke_at_safepoint(ref_processor(), clear_all_soft_refs);
 
   gch->post_full_gc_dump(gc_timer);

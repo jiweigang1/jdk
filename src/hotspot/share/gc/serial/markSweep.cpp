@@ -142,7 +142,7 @@ template <class T> inline void MarkSweep::follow_root(T* p) {
   }
   follow_stack();
 }
-
+//进行 GC root 回收
 void MarkSweep::FollowRootClosure::do_oop(oop* p)       { follow_root(p); }
 void MarkSweep::FollowRootClosure::do_oop(narrowOop* p) { follow_root(p); }
 
