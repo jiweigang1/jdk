@@ -134,6 +134,7 @@ public:
 };
 
 template <class SpaceType>
+//设置对象需要移动指针
 inline void CompactibleSpace::scan_and_forward(SpaceType* space, CompactPoint* cp) {
   // Compute the new addresses for the live objects and store it in the mark
   // Used by universe::mark_sweep_phase2()
@@ -172,16 +173,20 @@ inline void CompactibleSpace::scan_and_forward(SpaceType* space, CompactPoint* c
       // prefetch beyond cur_obj
       Prefetch::write(cur_obj, interval);
       size_t size = space->scanned_block_size(cur_obj);
+      //compact_top 对象的体积减去移动的长度 加上原始的 compact_top
       compact_top = cp->space->forward(oop(cur_obj), size, cp, compact_top);
       cur_obj += size;
       end_of_live = cur_obj;
     } else {
       // run over all the contiguous dead objects
+      // 跳过所有被回收的对象
       HeapWord* end = cur_obj;
       do {
         // prefetch beyond end
         Prefetch::write(end, interval);
+        // scanned_block_size 为对象的体积
         end += space->scanned_block_size(end);
+        //如果堆内存按照顺序创建对象，这里不会出现不是对象的指针
       } while (end < scan_limit && (!space->scanned_block_is_obj(end) || !oop(end)->is_gc_marked()));
 
       // see if we might want to pretend this object is alive so that
@@ -353,8 +358,9 @@ inline void CompactibleSpace::scan_and_compact(SpaceType* space) {
 }
 
 #endif // INCLUDE_SERIALGC
-
+//对象的大小
 size_t ContiguousSpace::scanned_block_size(const HeapWord* addr) const {
+  // 如果 addr 不是对象应该返回 1 ？
   return oop(addr)->size();
 }
 

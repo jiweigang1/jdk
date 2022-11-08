@@ -510,7 +510,7 @@ class ContiguousSpace: public CompactibleSpace {
   inline HeapWord* scan_limit() const {
     return top();
   }
-
+  //如果队内存是按照顺序创建对象，这里都可以返回true
   inline bool scanned_block_is_obj(const HeapWord* addr) const {
     return true; // Always true, since scan_limit is top
   }

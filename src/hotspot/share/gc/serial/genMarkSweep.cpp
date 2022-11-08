@@ -274,7 +274,7 @@ void GenMarkSweep::mark_sweep_phase2() {
   GenCollectedHeap* gch = GenCollectedHeap::heap();
 
   GCTraceTime(Info, gc, phases) tm("Phase 2: Compute new object addresses", _gc_timer);
-
+  //计算新的指针位置
   gch->prepare_for_compaction();
 }
 
