@@ -87,6 +87,7 @@ inline void MarkSweep::follow_object(oop obj) {
     // be split into chunks if needed.
     MarkSweep::follow_array((objArrayOop)obj);
   } else {
+    // oopDesc::oop_iterate 遍历这个对象所有引用的对象
     obj->oop_iterate(&mark_and_push_closure);
   }
 }
@@ -131,8 +132,11 @@ template <class T> inline void MarkSweep::follow_root(T* p) {
   T heap_oop = RawAccess<>::oop_load(p);
   if (!CompressedOops::is_null(heap_oop)) {
     oop obj = CompressedOops::decode_not_null(heap_oop);
+    //如果没有被标记
     if (!obj->mark_raw()->is_marked()) {
+      //标记对象
       mark_object(obj);
+      //标记对象成员
       follow_object(obj);
     }
   }
