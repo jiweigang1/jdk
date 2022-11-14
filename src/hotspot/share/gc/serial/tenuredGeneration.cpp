@@ -160,7 +160,7 @@ bool TenuredGeneration::promotion_attempt_is_safe(size_t max_promotion_in_bytes)
 
   return res;
 }
-
+// 执行老年代垃圾回收
 void TenuredGeneration::collect(bool   full,
                                 bool   clear_all_soft_refs,
                                 size_t size,
@@ -180,7 +180,7 @@ void TenuredGeneration::collect(bool   full,
 
   gch->pre_full_gc_dump(gc_timer);
   
-  //会调用 GC
+  //执行 GC
   GenMarkSweep::invoke_at_safepoint(ref_processor(), clear_all_soft_refs);
 
   gch->post_full_gc_dump(gc_timer);

@@ -37,10 +37,10 @@ SerialHeap* SerialHeap::heap() {
 }
 
 SerialHeap::SerialHeap(GenCollectorPolicy* policy) :
+    //设置各个代的类型
     GenCollectedHeap(policy,
                      Generation::DefNew,
-                     Generation::MarkSweepCompact,
-                     "Copy:MSC"),
+                     Generation::MarkSweepCompact,"Copy:MSC"),
     _eden_pool(NULL),
     _survivor_pool(NULL),
     _old_pool(NULL) {
@@ -50,23 +50,30 @@ SerialHeap::SerialHeap(GenCollectorPolicy* policy) :
 
 void SerialHeap::initialize_serviceability() {
 
+  //新生代
   DefNewGeneration* young = young_gen();
 
   // Add a memory pool for each space and young gen doesn't
   // support low memory detection as it is expected to get filled up.
+  
+  //伊甸园区
   _eden_pool = new ContiguousSpacePool(young->eden(),
                                        "Eden Space",
                                        young->max_eden_size(),
                                        false /* support_usage_threshold */);
+  //存活区
   _survivor_pool = new SurvivorContiguousSpacePool(young,
                                                    "Survivor Space",
                                                    young->max_survivor_size(),
                                                    false /* support_usage_threshold */);
   TenuredGeneration* old = old_gen();
+  
+  //老年代
   _old_pool = new GenerationPool(old, "Tenured Gen", true);
 
   _young_manager->add_pool(_eden_pool);
   _young_manager->add_pool(_survivor_pool);
+
   young->set_gc_manager(_young_manager);
 
   _old_manager->add_pool(_eden_pool);

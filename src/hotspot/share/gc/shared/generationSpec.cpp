@@ -37,8 +37,9 @@
 #include "gc/serial/defNewGeneration.hpp"
 #include "gc/serial/tenuredGeneration.hpp"
 #endif
-
+// 创建各个内存代管理
 Generation* GenerationSpec::init(ReservedSpace rs, CardTableRS* remset) {
+  // 名字是设置好的
   switch (name()) {
 #if INCLUDE_SERIALGC
     case Generation::DefNew:

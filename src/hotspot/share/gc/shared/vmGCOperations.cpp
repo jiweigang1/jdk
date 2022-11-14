@@ -163,6 +163,7 @@ void VM_GenCollectForAllocation::doit() {
 
   GenCollectedHeap* gch = GenCollectedHeap::heap();
   GCCauseSetter gccs(gch, _gc_cause);
+  //通知内存管理器一次内存失败
   _result = gch->satisfy_failed_allocation(_word_size, _tlab);
   assert(gch->is_in_reserved_or_null(_result), "result not in heap");
 

@@ -74,6 +74,7 @@ GenCollectedHeap::GenCollectedHeap(GenCollectorPolicy *policy,
                                    const char* policy_counters_name) :
   CollectedHeap(),
   _rem_set(NULL),
+  // young 新生代 垃圾回收类型 
   _young_gen_spec(new GenerationSpec(young,
                                      policy->initial_young_size(),
                                      policy->max_young_size(),
@@ -121,6 +122,7 @@ jint GenCollectedHeap::initialize() {
   BarrierSet::set_barrier_set(bs);
 
   ReservedSpace young_rs = heap_rs.first_part(_young_gen_spec->max_size(), false, false);
+  //GenerationSpec::init
   _young_gen = _young_gen_spec->init(young_rs, rem_set());
   heap_rs = heap_rs.last_part(_young_gen_spec->max_size());
 
@@ -355,6 +357,7 @@ HeapWord* GenCollectedHeap::mem_allocate_work(size_t size,
     }
 
     VM_GenCollectForAllocation op(size, is_tlab, gc_count_before);
+    //会执行 GC
     VMThread::execute(&op);
     if (op.prologue_succeeded()) {
       result = op.result();
@@ -453,7 +456,7 @@ bool GenCollectedHeap::must_clear_all_soft_refs() {
   return _gc_cause == GCCause::_metadata_GC_clear_soft_refs ||
          _gc_cause == GCCause::_wb_full_gc;
 }
-
+/// 执行 GC 
 void GenCollectedHeap::collect_generation(Generation* gen, bool full, size_t size,
                                           bool is_tlab, bool run_verification, bool clear_soft_refs,
                                           bool restore_marks_for_biased_locking) {
@@ -515,6 +518,7 @@ void GenCollectedHeap::collect_generation(Generation* gen, bool full, size_t siz
     } else {
       // collect() below will enable discovery as appropriate
     }
+    // 执行 GC 这里具体调用的 接口实现
     gen->collect(full, clear_soft_refs, size, is_tlab);
     if (!rp->enqueuing_is_done()) {
       rp->disable_discovery();
@@ -535,7 +539,7 @@ void GenCollectedHeap::collect_generation(Generation* gen, bool full, size_t siz
     Universe::verify("After GC");
   }
 }
-
+// 执行 GC
 void GenCollectedHeap::do_collection(bool           full,
                                      bool           clear_all_soft_refs,
                                      size_t         size,
@@ -575,6 +579,7 @@ void GenCollectedHeap::do_collection(bool           full,
     bool do_young_collection = !old_collects_young && _young_gen->should_collect(full, size, is_tlab);
 
     FormatBuffer<> gc_string("%s", "Pause ");
+    // 执行 Young GC 
     if (do_young_collection) {
       gc_string.append("Young");
     } else {
@@ -600,7 +605,7 @@ void GenCollectedHeap::do_collection(bool           full,
         prepare_for_verify();
         prepared_for_verification = true;
       }
-
+      //执行 yong GC 
       collect_generation(_young_gen,
                          full,
                          size,
@@ -691,7 +696,9 @@ void GenCollectedHeap::verify_nmethod(nmethod* nm) {
   CodeCache::verify_scavenge_root_nmethod(nm);
 }
 
+//处理分配内存失败
 HeapWord* GenCollectedHeap::satisfy_failed_allocation(size_t size, bool is_tlab) {
+  // GC 的原因是 _allocation_failure
   GCCauseSetter x(this, GCCause::_allocation_failure);
   HeapWord* result = NULL;
 
@@ -705,6 +712,7 @@ HeapWord* GenCollectedHeap::satisfy_failed_allocation(size_t size, bool is_tlab)
     return result;   // Could be null if we are out of space.
   } else if (!incremental_collection_will_fail(false /* don't consult_young */)) {
     // Do an incremental collection.
+    // 执行 GC 
     do_collection(false,                     // full
                   false,                     // clear_all_soft_refs
                   size,                      // size
