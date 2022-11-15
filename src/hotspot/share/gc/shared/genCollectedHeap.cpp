@@ -79,6 +79,7 @@ GenCollectedHeap::GenCollectedHeap(GenCollectorPolicy *policy,
                                      policy->initial_young_size(),
                                      policy->max_young_size(),
                                      policy->gen_alignment())),
+  
   _old_gen_spec(new GenerationSpec(old,
                                    policy->initial_old_size(),
                                    policy->max_old_size(),
