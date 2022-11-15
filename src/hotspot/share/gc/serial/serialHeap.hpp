@@ -34,7 +34,7 @@ class GenCollectorPolicy;
 class GCMemoryManager;
 class MemoryPool;
 class TenuredGeneration;
-
+ 
 class SerialHeap : public GenCollectedHeap {
 private:
   MemoryPool* _eden_pool;
