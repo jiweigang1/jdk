@@ -43,8 +43,7 @@ private:
 
   virtual void initialize_serviceability();
 
-public:
-  static SerialHeap* heap();
+public:  static SerialHeap* heap();
 
   SerialHeap(GenCollectorPolicy* policy);
 
@@ -55,7 +54,7 @@ public:
   virtual const char* name() const {
     return "Serial";
   }
-
+  //虚函数
   virtual GrowableArray<GCMemoryManager*> memory_managers();
   virtual GrowableArray<MemoryPool*> memory_pools();
 
@@ -66,6 +65,9 @@ public:
 
   DefNewGeneration* young_gen() const {
     assert(_young_gen->kind() == Generation::DefNew, "Wrong generation type");
+    // _young_gen 父类的属性
+    // 父类 GenCollectedHeap 在执行 initialize 初始化的时候会创建 
+    // 父类中 是 Generation 强制转换为 DefNewGeneration 
     return static_cast<DefNewGeneration*>(_young_gen);
   }
 

@@ -124,6 +124,7 @@ jint GenCollectedHeap::initialize() {
 
   ReservedSpace young_rs = heap_rs.first_part(_young_gen_spec->max_size(), false, false);
   //GenerationSpec::init
+  //初始化新生代
   _young_gen = _young_gen_spec->init(young_rs, rem_set());
   heap_rs = heap_rs.last_part(_young_gen_spec->max_size());
 
